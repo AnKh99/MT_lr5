@@ -1,21 +1,71 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, {Component} from 'react';
+import { 
+  FlatList, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+ } from 'react-native';
+import ModalView from './ModalView';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+let url = "https://jsonplaceholder.typicode.com/posts";
+
+
+export default class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      isLoading: true,
+      modalVisible: false,
+      item: {},
+    };
+  }
+
+  componentDidMount(){
+    return fetch(url)
+    .then((responce) => responce.json())
+    .then((responceJson) => {
+      this.setState({
+        isLoading: false,
+        dataSource: responceJson,
+        modalVisible: false,
+      });
+    })
+  }
+
+  clickItem = (item) => {
+    this.setState({
+      modalVisible: true,
+      item: item,
+    });
+  }
+
+  getItem = (item) => {
+    return(
+      <TouchableOpacity 
+        style={[{padding: 20, margin: 5, backgroundColor: '#efddb3'}]}
+        onPress={() => this.clickItem(item)}
+      >
+        <Text>{item.title}</Text>
+      </TouchableOpacity>
+    )
+  }
+
+  render(){
+    return(
+      <>
+      <View style={{paddingTop:25}}>
+        <ModalView
+          item = {this.state.item}
+          modalVisible = {this.state.modalVisible}
+          setModalVisible = { () => {this.setState({modalVisible:true}) }}
+        />
+        <FlatList
+          data={this.state.dataSource}
+          renderItem={({item}) => this.getItem(item)}
+          keyExtractor={({id}) => id}
+        />
+      </View>
+      </>
+    );
+  }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
